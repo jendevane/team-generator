@@ -1,0 +1,16 @@
+.navbar-brand {
+    width:100%;
+    align-items: center;
+    display:flex;
+    justify-content: center;
+
+}
+.card {
+  margin:20px;
+  
+    
+}
+.title {
+    background-color: lightblue ;
+    max-width:100%
+}

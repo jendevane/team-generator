@@ -13,15 +13,15 @@ function userInfo() {
             message: 'Please enter employee name',
             name: 'name',
         },
-          {
+        {
             type: 'input',
-            message:'Please enter employee email',
-            name:'email',
+            message: 'Please enter employee email',
+            name: 'email',
         },
-    {
-        type: 'input',
-        message: 'Please enter employee ID',
-        name:'id'
+        {
+            type: 'input',
+            message: 'Please enter employee ID',
+            name: 'id'
             
         },
         {
@@ -31,12 +31,58 @@ function userInfo() {
             choices: ["Manager", "Engineer", "Intern"]
         
           
-    }
+        }
 
             
         
     ])
         .then(answers => {
+            if (answers.role === 'Manager') {
+                inquirer.prompt([
+                    {
+                        type: 'input',
+                        message: 'Please enter office number',
+                        name: 'office number',
+                
+                    }
+                ])
+            }
+        })
+        .then(response => { //add response
         
-    })
+        })
+
+else if (answers.role === 'Engineer')
+        inquirer.prompt([
+            {
+                type: 'input',
+                message: 'Please enter GitHub name',
+                name: 'gitHub',
+            }
+        ])
+            .then(response => { // add respnse 
+            })
+    else if (answers.role === 'Intern') {
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: "school",
+                message: "Please enter school name"
+
+            
+            }
+
+        ])
+            .then(response => { //add response
+        
+            })
+    }
+else {
+    //add employeeteam information
 }
+}
+    // add if they want to add an extra team member to revert back 
+    //generate team members with html
+            
+    
+userInfo() 

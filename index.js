@@ -85,7 +85,13 @@ function userInfo() {
                         message: "Please enter school name",
                         
             
-                    }
+                  },
+                  {
+                      type: 'list',
+                      name: 'addmember',
+                      message: 'Would you like to add more team members?',
+                      choices: [ "yes", "no"],
+                  }
                 ])
             }
         })

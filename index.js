@@ -6,97 +6,108 @@ const Intern = require('./lib/Intern')
 const Manager = require('./lib/Manager')
 const writeFile = require('./src/generate-site')
 const appendFile= require('./src/append-site')
-let engineerUser = {}
-let internUser = {}
-let managerUser = {}
-let roles = ""
+
+users = []
 
 
-function userInfo() {
+function addUser() {
     inquirer.prompt([
-        
-        {
-            type: 'input',
-            message: 'Please enter employee name',
-            name: 'name',
-        },
-        {
-            type: 'input',
-            message: 'Please enter employee email',
-            name: 'email',
-        },
-        {
-            type: 'input',
-            message: 'Please enter employee ID',
-            name: 'id'
-            
-        },
         {
             type: 'list',
             message: 'Please select role',
             name: 'role',
-            choices: ["Manager", "Engineer", "Intern"]
-        
-          
+            choices: ["Manager", "Engineer", "Intern", "Quit"]
         }
+    ]).then(roleAnswer => {
+        if (roleAnswer.role === 'Quit') {
+            generateEndHTML();
+        }
+        else {
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    message: 'Please enter employee name',
+                    name: 'name',
+                },
+                {
+                    type: 'input',
+                    message: 'Please enter employee email',
+                    name: 'email',
+                },
+                {
+                    type: 'input',
+                    message: 'Please enter employee ID',
+                    name: 'id'
 
-            
-        
-    ])
-        .then(answers => {
-            roles=answers.role
-            if (answers.role === 'Manager') {
-                managerUser.email = answers.email
-                managerUser.name = answers.name
-                managerUser.id= answers.id
+                },
+            ]).then(answers => {
+                if (roleAnswer.role === 'Manager') {
+                    inquirer.prompt([
+                        {
+                            type: 'input',
+                            message: 'Please enter office number',
+                            name: 'officenumber',
 
-                return inquirer.prompt([
-                    {
-                        type: 'input',
-                        message: 'Please enter office number',
-                        name: 'officenumber',
-                
-                    }
-                ])
-            }
-            
-            else if (answers.role === 'Engineer') {
-                engineerUser.email = answers.email
-                engineerUser.name = answers.name
-                engineerUser.id= answers.id
-              return  inquirer.prompt([
-                    {
-                        type: 'input',
-                        message: 'Please enter GitHub name',
-                        name: 'gitHub',
-                    }
-                ])
-            }
-                
-            else if (answers.role === 'Intern') {
-                internUser.email = answers.email
-                internUser.name = answers.name
-                internUser.id= answers.id
-              return  inquirer.prompt([
+                        }
+                    ]).then(managerAnswers => {
+                        addUserHTML(new Manager(answers.name, answers.id, answers.email, managerAnswers.officenumber))
+                            .then(() => {
+                                // Did not select Quit, so we want to add another
+                                addUser();
+                            });
+                    });
+                }
 
-                    {
-                        type: 'input',
-                        name: "school",
-                        message: "Please enter school name",
-                        
-            
-                  },
-                  {
-                      type: 'list',
-                      name: 'addmember',
-                      message: 'Would you like to add more team members?',
-                      choices: [ "yes", "no"],
-                  }
-                ])
-            }
-        })
-        .then(response => {
-        const startHTML = `<!DOCTYPE html>
+                else if (roleAnswer.role === 'Engineer') {
+                    inquirer.prompt([
+                        {
+                            type: 'input',
+                            message: 'Please enter GitHub name',
+                            name: 'gitHub',
+                        }
+                    ]).then(engineerAnswers => {
+                        addUserHTML(new Engineer(answers.name, answers.id, answers.email, engineerAnswers.github))
+                            .then(() => {
+                                // Did not select Quit, so we want to add another
+                                addUser();
+                            });
+                    });
+                }
+
+                else if (roleAnswer.role === 'Intern') {
+                    inquirer.prompt([
+
+                        {
+                            type: 'input',
+                            name: "school",
+                            message: "Please enter school name",
+                        }
+                    ]).then(internAnswers => {
+                        addUserHTML(new Intern(answers.name, answers.id, answers.email, internAnswers.school))
+                            .then(() => {
+                                // Did not select Quit, so we want to add another
+                                addUser();
+                            });
+                    });
+                }
+            });
+        }
+    })
+
+}
+    //add employeeteam information
+
+    // add if they want to add an extra team member to revert back
+    //generate team members with html
+
+
+generateStartHTML().then(function () {
+    addUser();
+})
+
+
+function generateStartHTML() {
+    return writeFile(`<!DOCTYPE html>
             
 <html lang="en">
 
@@ -115,92 +126,76 @@ function userInfo() {
         <main class =container>
 
             <div class="row mt-2">
-            `
-            let filledHTML = ''
-       
-            if (roles === 'Manager') {
-                filledHTML = `
-                <div class="card mt-2" style="width: 18rem;">
-                
-                <div class="card-body">
-                  <div class="title">
-                  <h5 class="card-title">${managerUser.name}</h5>
-                  <p class="fw-light">${roles}</p>
-                  </div>
-                  <ul class="list-unstyled">
-                    <li class=list-group-item>ID: ${managerUser.id}</li>
-                    <li class=list-group-item>Email: <a href=mailto:${managerUser.email}>${managerUser.email}  </a></li>
-                    <li class=list-group-item>Office: ${response.officenumber}</li>
-                    </ul>
-                  
-                </div>
-              </div>`
-                
-            }
-            else if (roles === 'Intern') {
-                filledHTML= `
-            <div class="card mt-2" style="width: 18rem;">
-                
-                <div class="card-body">
-                  <div class="title">
-                  <h5 class="card-title">${internUser.name}</h5>
-                  <p class="fw-light">${roles}</p>
-                  </div>
-                  <ul class="list-unstyled">
-                    <li class=list-group-item>ID: ${internUser.id}</li>
-                    <li class=list-group-item>Email: <a href=mailto:${internUser.email}>${internUser.email}  </a></li>
-                    <li class=list-group-item> GitHub : <a href = 'https://www.github.com/${response.github}'> ${response.github}</a></li>
-                    </ul>
-                  
-                </div>
-              </div>`
+            `);
+}
 
-            }
-            else if (roles === 'Engineer') {
-                filledHTML = `
-                <div class="card mt-2" style="width: 18rem;">
-                
-              <div class="card-body">
-                <div class="title">
-                <h5 class="card-title">${engineerUser.name}</h5>
-                <p class="fw-light">${engineerUser.role}</p>
-                </div>
-                <ul class="list-unstyled">
-                  <li class=list-group-item>ID: ${engineerUser.id}</li>
-                  <li class=list-group-item>Email: <a href=mailto:${engineerUser.email}>${engineerUser.email}  </a></li>
-                  <li class=list-group-item> School: ${response.school}</li>
-                  </ul>
-                
-              </div>
-            </div>`
-
-            }
-                
-            
-             
-              
-            
-           
-            
-              
-              
-            
-   let endHTML=`        
+function generateEndHTML() {
+    return appendFile(`        
      
              
-</main>`
-        
-           writeFile(startHTML)
-            appendFile(filledHTML)
-            appendFile(endHTML)
-          
-        
-        })
+</main>`);
 }
-    //add employeeteam information
 
-    // add if they want to add an extra team member to revert back 
-    //generate team members with html
+function addUserHTML(user) {
+    console.log(user.name);
+    let filledHTML = ''
+
+    if (user.getRole() === 'Manager') {
+        filledHTML = `
+            <div class="card mt-2" style="width: 18rem;">
             
-    
-userInfo()
+            <div class="card-body">
+              <div class="title">
+              <h5 class="card-title">${user.name}</h5>
+              <p class="fw-light">${user.getRole()}</p>
+              </div>
+              <ul class="list-unstyled">
+                <li class=list-group-item>ID: ${user.id}</li>
+                <li class=list-group-item>Email: <a href=mailto:${user.email}>${user.email}  </a></li>
+                <li class=list-group-item>Office: ${user.getOfficeNumber()}</li>
+                </ul>
+              
+            </div>
+          </div>`
+
+    }
+    else if (user.getRole() === 'Engineer') {
+        filledHTML= `
+        <div class="card mt-2" style="width: 18rem;">
+            
+            <div class="card-body">
+              <div class="title">
+              <h5 class="card-title">${user.name}</h5>
+              <p class="fw-light">${user.getRole()}</p>
+              </div>
+              <ul class="list-unstyled">
+                <li class=list-group-item>ID: ${user.id}</li>
+                <li class=list-group-item>Email: <a href=mailto:${user.email}>${user.email}  </a></li>
+                <li class=list-group-item> GitHub : <a href = 'https://www.github.com/${user.getGithub()}'> ${user.getGithub()}</a></li>
+                </ul>
+              
+            </div>
+          </div>`
+
+    }
+    else if (user.getRole() === 'Intern') {
+        filledHTML = `
+            <div class="card mt-2" style="width: 18rem;">
+            
+          <div class="card-body">
+            <div class="title">
+            <h5 class="card-title">${user.name}</h5>
+            <p class="fw-light">${user.getRole()}</p>
+            </div>
+            <ul class="list-unstyled">
+              <li class=list-group-item>ID: ${user.id}</li>
+              <li class=list-group-item>Email: <a href=mailto:${user.email}>${user.email}  </a></li>
+              <li class=list-group-item> School: ${user.school}</li>
+              </ul>
+            
+          </div>
+        </div>`
+
+    }
+    return appendFile(filledHTML);
+}
